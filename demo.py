@@ -14,10 +14,10 @@ from utils.estimate_pose import estimate_pose
 from utils.rotate_vertices import frontalize
 from utils.render_app import get_visibility, get_uv_mask, get_depth_image
 from utils.write import write_obj_with_colors, write_obj_with_texture
+import cv2
 
 def main(args):
     if args.isShow or args.isTexture:
-        import cv2
         from utils.cv_plot import plot_kpt, plot_vertices, plot_pose_box
 
     # ---- init PRN
@@ -36,12 +36,14 @@ def main(args):
         image_path_list.extend(glob(os.path.join(image_folder, files)))
     total_num = len(image_path_list)
 
-    for i, image_path in enumerate(image_path_list):
+    counter = 0
+    stream = cv2.VideoCapture(0)
+    (grabbed, image) = stream.read()
+    while grabbed:
+        counter += 1
+        name = str(counter)
+        (grabbed, image) = stream.read()
 
-        name = image_path.strip().split('/')[-1][:-4]
-
-        # read image
-        image = imread(image_path)
         [h, w, c] = image.shape
         if c>3:
             image = image[:,:,:3]
@@ -49,9 +51,9 @@ def main(args):
         # the core: regress position map
         if args.isDlib:
             max_size = max(image.shape[0], image.shape[1])
-            if max_size> 1000:
-                image = rescale(image, 1000./max_size)
-                image = (image*255).astype(np.uint8)
+            if max_size > 1000:
+                scale_fraction = 1000. / max_size
+                image = cv2.resize(image, None, fx=scale_fraction, fy=scale_fraction)
             pos = prn.process(image) # use dlib to detect face
         else:
             if image.shape[0] == image.shape[1]:
@@ -60,7 +62,7 @@ def main(args):
             else:
                 box = np.array([0, image.shape[1]-1, 0, image.shape[0]-1]) # cropped with bounding box
                 pos = prn.process(image, box)
-        
+
         image = image/255.
         if pos is None:
             continue
@@ -75,7 +77,7 @@ def main(args):
             save_vertices[:,1] = h - 1 - save_vertices[:,1]
 
         if args.isImage:
-            imsave(os.path.join(save_folder, name + '.jpg'), image)
+            cv2.imwrite(os.path.join(save_folder, name + '.jpg'), image)
 
         if args.is3d:
             # corresponding colors
@@ -113,18 +115,18 @@ def main(args):
         if args.isPose or args.isShow:
             # estimate pose
             camera_matrix, pose = estimate_pose(vertices)
-            np.savetxt(os.path.join(save_folder, name + '_pose.txt'), pose) 
-            np.savetxt(os.path.join(save_folder, name + '_camera_matrix.txt'), camera_matrix) 
+            np.savetxt(os.path.join(save_folder, name + '_pose.txt'), pose)
+            np.savetxt(os.path.join(save_folder, name + '_camera_matrix.txt'), camera_matrix)
 
             np.savetxt(os.path.join(save_folder, name + '_pose.txt'), pose)
 
         if args.isShow:
             # ---------- Plot
-            image_pose = plot_pose_box(image, camera_matrix, kpt)
-            cv2.imshow('sparse alignment', plot_kpt(image, kpt))
-            cv2.imshow('dense alignment', plot_vertices(image, vertices))
+            # image_pose = plot_pose_box(image, camera_matrix, kpt)
+            # cv2.imshow('sparse alignment', plot_kpt(image, kpt))
+            # cv2.imshow('dense alignment', plot_vertices(image, vertices))
             cv2.imshow('pose', plot_pose_box(image, camera_matrix, kpt))
-            cv2.waitKey(0)
+            cv2.waitKey(1)
 
 
 if __name__ == '__main__':
@@ -138,7 +140,7 @@ if __name__ == '__main__':
                         help='set gpu id, -1 for CPU')
     parser.add_argument('--isDlib', default=True, type=ast.literal_eval,
                         help='whether to use dlib for detecting face, default is True, if False, the input image should be cropped in advance')
-    parser.add_argument('--is3d', default=True, type=ast.literal_eval,
+    parser.add_argument('--is3d', default=False, type=ast.literal_eval,
                         help='whether to output 3D face(.obj). default save colors.')
     parser.add_argument('--isMat', default=False, type=ast.literal_eval,
                         help='whether to save vertices,color,triangles as mat for matlab showing')
@@ -146,7 +148,7 @@ if __name__ == '__main__':
                         help='whether to output key points(.txt)')
     parser.add_argument('--isPose', default=False, type=ast.literal_eval,
                         help='whether to output estimated pose(.txt)')
-    parser.add_argument('--isShow', default=False, type=ast.literal_eval,
+    parser.add_argument('--isShow', default=True, type=ast.literal_eval,
                         help='whether to show the results with opencv(need opencv)')
     parser.add_argument('--isImage', default=False, type=ast.literal_eval,
                         help='whether to save input image')
