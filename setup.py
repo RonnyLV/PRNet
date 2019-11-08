@@ -17,6 +17,13 @@ setup(
         'prnet',
         'prnet.utils'
     ],
+    package_dir={'prnet': 'prnet'},
+    package_data={
+        'prnet': [
+            'assets/net-data/*',
+            'assets/uv-data/*'
+        ]
+    },
     python_requires='>=3.6, <4',
     install_requires=install_requires,
     project_urls={  # Optional
