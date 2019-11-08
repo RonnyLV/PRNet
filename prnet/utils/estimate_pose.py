@@ -31,7 +31,7 @@ def matrix2angle(R):
         x = asin(R[2,0])
         y = atan2(R[2,1]/cos(x), R[2,2]/cos(x))
         z = atan2(R[1,0]/cos(x), R[0,0]/cos(x))
-        
+
     else:# Gimbal lock
         z = 0 #can be anything
         if R[2,0] == -1:
