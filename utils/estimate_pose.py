@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from math import cos, sin, atan2, asin
 
@@ -86,8 +88,9 @@ def compute_similarity_transform(points_static, points_to_transform):
     P = np.c_[s*np.eye(3).dot(R), t_final]
     return P
 
-def estimate_pose(vertices):
-    canonical_vertices = np.load('Data/uv-data/canonical_vertices.npy')
+
+def estimate_pose(vertices, prefix: str = ''):
+    canonical_vertices = np.load(os.path.join(prefix, 'Data/uv-data/canonical_vertices.npy'))
     P = compute_similarity_transform(vertices, canonical_vertices)
     _,R,_ = P2sRt(P) # decompose affine matrix to s, R, t
     pose = matrix2angle(R) 
