@@ -20,6 +20,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 with open('requirements.txt') as fp:
     install_requires = fp.read()
 
+download_models()
+
 setup(
     name='prnet',
     version='0.1',
