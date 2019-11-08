@@ -1,6 +1,6 @@
 from os import path
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -13,7 +13,10 @@ with open('requirements.txt') as fp:
 setup(
     name='prnet',
     version='0.1',
-    packages=find_packages(include=['prnet']),
+    packages=[
+        'prnet',
+        'prnet.utils'
+    ],
     python_requires='>=3.6, <4',
     install_requires=install_requires,
     project_urls={  # Optional
