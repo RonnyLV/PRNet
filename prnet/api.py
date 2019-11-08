@@ -1,18 +1,18 @@
 import numpy as np
 import os
-from skimage.io import imread, imsave
+from skimage.io import imread
 from skimage.transform import estimate_transform, warp
-from time import time
 
-from .predictor import PosPrediction
+from prnet.predictor import PosPrediction
+
+import pkg_resources
 
 class PRN:
     ''' Joint 3D Face Reconstruction and Dense Alignment with Position Map Regression Network
     Args:
         is_dlib(bool, optional): If true, dlib is used for detecting faces.
-        prefix(str, optional): If run at another folder, the absolute path is needed to load the data.
     '''
-    def __init__(self, is_dlib = False, prefix = '.'):
+    def __init__(self, is_dlib = False):
 
         # resolution of input and output image size.
         self.resolution_inp = 256
@@ -21,24 +21,24 @@ class PRN:
         #---- load detectors
         if is_dlib:
             import dlib
-            detector_path = os.path.join(prefix, 'Data/net-data/mmod_human_face_detector.dat')
+            detector_path = pkg_resources.resource_filename(__name__, 'assets/net-data/mmod_human_face_detector.dat')
             self.face_detector = dlib.cnn_face_detection_model_v1(
                     detector_path)
 
-        #---- load PRN 
+        #---- load PRN
         self.pos_predictor = PosPrediction(self.resolution_inp, self.resolution_op)
-        prn_path = os.path.join(prefix, 'Data/net-data/256_256_resfcn256_weight')
+        prn_path = pkg_resources.resource_filename(__name__, 'assets/net-data/256_256_resfcn256_weight')
         if not os.path.isfile(prn_path + '.data-00000-of-00001'):
             print("please download PRN trained model first.")
             exit()
         self.pos_predictor.restore(prn_path)
 
         # uv file
-        self.uv_kpt_ind = np.loadtxt(prefix + '/Data/uv-data/uv_kpt_ind.txt').astype(np.int32) # 2 x 68 get kpt
-        self.face_ind = np.loadtxt(prefix + '/Data/uv-data/face_ind.txt').astype(np.int32) # get valid vertices in the pos map
-        self.triangles = np.loadtxt(prefix + '/Data/uv-data/triangles.txt').astype(np.int32) # ntri x 3
-        
-        self.uv_coords = self.generate_uv_coords()        
+        self.uv_kpt_ind = np.loadtxt(pkg_resources.resource_filename(__name__, 'assets/uv-data/uv_kpt_ind.txt')).astype(np.int32) # 2 x 68 get kpt
+        self.face_ind = np.loadtxt(pkg_resources.resource_filename(__name__, 'assets/uv-data/face_ind.txt')).astype(np.int32) # get valid vertices in the pos map
+        self.triangles = np.loadtxt(pkg_resources.resource_filename(__name__, 'assets/uv-data/triangles.txt')).astype(np.int32) # ntri x 3
+
+        self.uv_coords = self.generate_uv_coords()
 
     def generate_uv_coords(self):
         resolution = self.resolution_op
@@ -87,7 +87,7 @@ class PRN:
                 kpt = image_info
                 if kpt.shape[0] > 3:
                     kpt = kpt.T
-                left = np.min(kpt[0, :]); right = np.max(kpt[0, :]); 
+                left = np.min(kpt[0, :]); right = np.max(kpt[0, :]);
                 top = np.min(kpt[1,:]); bottom = np.max(kpt[1,:])
             else:  # bounding box
                 bbox = image_info
@@ -111,7 +111,7 @@ class PRN:
         src_pts = np.array([[center[0]-size/2, center[1]-size/2], [center[0] - size/2, center[1]+size/2], [center[0]+size/2, center[1]-size/2]])
         DST_PTS = np.array([[0,0], [0,self.resolution_inp - 1], [self.resolution_inp - 1, 0]])
         tform = estimate_transform('similarity', src_pts, DST_PTS)
-        
+
         image = image/255.
         cropped_image = warp(image, tform.inverse, output_shape=(self.resolution_inp, self.resolution_inp))
 
@@ -127,9 +127,9 @@ class PRN:
         vertices = np.dot(np.linalg.inv(tform.params), cropped_vertices)
         vertices = np.vstack((vertices[:2,:], z))
         pos = np.reshape(vertices.T, [self.resolution_op, self.resolution_op, 3])
-        
+
         return pos
-            
+
     def get_landmarks(self, pos):
         '''
         Args:

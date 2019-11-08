@@ -2,11 +2,10 @@ import numpy as np
 import os
 from glob import glob
 import scipy.io as sio
-from skimage.io import imread, imsave
-from time import time
+from skimage.io import imread
 
-from api import PRN
-from utils.write import write_obj_with_colors
+from prnet.api import PRN
+from prnet.utils import write_obj_with_colors
 
 # ---- init PRN
 os.environ['CUDA_VISIBLE_DEVICES'] = '0' # GPU number, -1 for CPU

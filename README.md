@@ -1,7 +1,7 @@
 # Joint 3D Face Reconstruction and Dense Alignment with Position Map Regression Network
 
 <p align="center"> 
-<img src="Docs/images/prnet.gif">
+<img src="docs/images/prnet.gif">
 </p>
 
 
@@ -32,7 +32,7 @@ Dense alignment of both visible and non-visible points(including 68 key points).
 
 And the **visibility** of  points(1 for visible and 0 for non-visible).
 
-![alignment](Docs/images/alignment.jpg)
+![alignment](docs/images/alignment.jpg)
 
 * #### 3D Face Reconstruction
 
@@ -45,7 +45,7 @@ Get the 3D vertices and corresponding colours from a single image.  Save the res
 
 
 
-![alignment](Docs/images/reconstruct.jpg)
+![alignment](docs/images/reconstruct.jpg)
 
 
 
@@ -55,11 +55,11 @@ Get the 3D vertices and corresponding colours from a single image.  Save the res
 
   Rather than only use 68 key points to calculate the camera matrix(easily effected by expression and poses), we use all vertices(more than 40K) to calculate a more accurate pose.
 
-  #### ![pose](Docs/images/pose.jpg)
+  #### ![pose](docs/images/pose.jpg)
 
 * #### Depth image
 
-  ![pose](Docs/images/depth.jpg)
+  ![pose](docs/images/depth.jpg)
 
 * #### Texture Editing
 
@@ -67,13 +67,13 @@ Get the 3D vertices and corresponding colours from a single image.  Save the res
 
     modify special parts of input face, eyes for example:
 
-    ![pose](Docs/images/eye.jpg)
+    ![pose](docs/images/eye.jpg)
 
   * Face Swapping
 
     replace the texture with another, then warp it to original pose and use Poisson editing to blend images.
 
-    ![pose](Docs/images/swapping.jpg)
+    ![pose](docs/images/swapping.jpg)
 
     
 

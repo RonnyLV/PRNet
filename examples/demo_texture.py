@@ -1,17 +1,10 @@
 import numpy as np
 import os
-from glob import glob
-import scipy.io as sio
 from skimage.io import imread, imsave
-from skimage.transform import rescale, resize
-from time import time
-import argparse
-import ast
-import matplotlib.pyplot as plt
 import argparse
 
-from api import PRN
-from utils.render import render_texture
+from prnet.api import PRN
+from prnet.utils import render_texture
 import cv2
 
 

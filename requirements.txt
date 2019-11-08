@@ -2,5 +2,4 @@ numpy<1.17
 gast==0.2.2
 scikit-image
 scipy
-tensorflow
 opencv-contrib-python
